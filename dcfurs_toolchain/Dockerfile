@@ -15,5 +15,5 @@ cd /tmp/riscv-gnu-toolchain/ && \
 ./configure --prefix=/opt/riscv --enable-multilib && \
 make -j16 -l && \
 cd /tmp/ && \
-rm -rf /root/riscv-gnu-toolchain
+rm -rf /tmp/riscv-gnu-toolchain
 ENV PATH="/opt/riscv/bin:${PATH}"https://github.com/riscv/riscv-gnu-toolchain.git
