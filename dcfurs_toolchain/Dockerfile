@@ -10,13 +10,10 @@ RUN    pip3 install pillow
 
 WORKDIR /tmp/
 # This is hacky but allows for recursive cloning of submodules 
-RUN git clone --depth 1 https://github.com/riscv/riscv-gnu-toolchain.git riscv-gnu-toolchain
-WORKDIR /tmp/riscv-gnu-toolchain/
-# Tell the git submodule stuff to only clone in a shallow form. Helps with compile times.
-RUN sed -i 's/git submodule update/git submodule update --quiet --init --depth=1 --remote/g' Makefile.in
-RUN ./configure --prefix=/opt/riscv --enable-multilib
-RUN make
-WORKDIR /tmp/
-# TODO: Shrink image better
-RUN rm -rf /root/riscv-gnu-toolchain
+RUN git clone --depth 1 https://github.com/riscv/riscv-gnu-toolchain.git riscv-gnu-toolchain && \
+cd /tmp/riscv-gnu-toolchain/ && \
+./configure --prefix=/opt/riscv --enable-multilib && \
+make -j16 -l && \
+cd /tmp/ && \
+rm -rf /root/riscv-gnu-toolchain
 ENV PATH="/opt/riscv/bin:${PATH}"https://github.com/riscv/riscv-gnu-toolchain.git
