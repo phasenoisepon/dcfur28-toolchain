@@ -15,7 +15,8 @@ WORKDIR /build/riscv-gnu-toolchain/
 # Tell the git submodule stuff to only clone in a shallow form. Helps with compile times.
 #RUN sed -i 's/git submodule update/git submodule update --quiet --init --depth=1 --remote/g' Makefile.in
 RUN ./configure --prefix=/opt/riscv --enable-multilib
-RUN make
+# GH runners have 2 cores
+RUN make -j 3 -l
 WORKDIR /root/
 # TODO: Shrink image bettertmp
 #RUN rm -rf /root/riscv-gnu-toolchain
@@ -39,5 +40,5 @@ COPY --from=build /opt/riscv/riscv64-unknown-elf /opt/riscv/riscv64-unknown-elf
 RUN curl -L https://api.github.com/repos/defconfurs/dcfurs-badge-dc28/tarball | tar xzvf - --one-top-level="dcfurs-badge-dc28" --strip-components 1 -C /opt
 WORKDIR /opt/dcfurs-badge-dc28
 RUN python3 ./make.py clean
-#RUN python3 ./make.py
+RUN python3 ./make.py
 #RUN python3 ./make.py upload
