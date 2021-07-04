@@ -18,12 +18,26 @@ RUN ./configure --prefix=/opt/riscv --enable-multilib
 RUN make
 WORKDIR /root/
 # TODO: Shrink image bettertmp
-RUN rm -rf /root/riscv-gnu-toolchain
-ENV PATH="/opt/riscv/bin:${PATH}"
+#RUN rm -rf /root/riscv-gnu-toolchain
+#RUN mkdir /opt/riscv_libs
+#RUN ldd /opt/riscv/bin/riscv64-unknown-elf-gcc | grep "=> /" | awk '{print $3}' | xargs -I '{}' cp -v '{}' /opt/riscv_libs
+#ENV PATH="/opt/riscv/bin:${PATH}"
 
-FROM ubuntu:20.04 as dev
-ENV PATH="/riscv/bin:${PATH}"
-RUN mkdir -p /riscv/bin
-COPY --from=build /opt/riscv/bin /riscv/bin
-RUN apt update -y
-RUN apt install -y libexpat-dev libmpc-dev
+# Edge image
+FROM debian:stable-slim as dev
+ENV PATH="$PATH:/opt/riscv/bin"
+# Get the DCFURS Stuff
+RUN apt update -y && \
+    apt install -y python3 python3-pillow libmpc-dev dfu-util curl
+
+RUN mkdir -p /opt/riscv/bin
+COPY --from=build /opt/riscv/bin/riscv64-unknown-elf-gcc /opt/riscv/bin/riscv64-unknown-elf-gcc
+COPY --from=build /opt/riscv/bin/riscv64-unknown-elf-objcopy /opt/riscv/bin/riscv64-unknown-elf-objcopy
+COPY --from=build /opt/riscv/lib /opt/riscv/lib
+COPY --from=build /opt/riscv/libexec /opt/riscv/libexec
+COPY --from=build /opt/riscv/riscv64-unknown-elf /opt/riscv/riscv64-unknown-elf
+RUN curl -L https://api.github.com/repos/defconfurs/dcfurs-badge-dc28/tarball | tar xzvf - --one-top-level="dcfurs-badge-dc28" --strip-components 1 -C /opt
+WORKDIR /opt/dcfurs-badge-dc28
+RUN python3 ./make.py clean
+#RUN python3 ./make.py
+#RUN python3 ./make.py upload
