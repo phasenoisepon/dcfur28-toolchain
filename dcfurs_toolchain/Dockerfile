@@ -16,7 +16,7 @@ WORKDIR /build/riscv-gnu-toolchain/
 #RUN sed -i 's/git submodule update/git submodule update --quiet --init --depth=1 --remote/g' Makefile.in
 RUN ./configure --prefix=/opt/riscv --enable-multilib
 # GH runners have 2 cores
-RUN make -j 3 -l
+RUN make -j$(nproc) -l
 WORKDIR /root/
 # TODO: Shrink image bettertmp
 #RUN rm -rf /root/riscv-gnu-toolchain
@@ -37,8 +37,3 @@ COPY --from=build /opt/riscv/bin/riscv64-unknown-elf-objcopy /opt/riscv/bin/risc
 COPY --from=build /opt/riscv/lib /opt/riscv/lib
 COPY --from=build /opt/riscv/libexec /opt/riscv/libexec
 COPY --from=build /opt/riscv/riscv64-unknown-elf /opt/riscv/riscv64-unknown-elf
-RUN curl -L https://api.github.com/repos/defconfurs/dcfurs-badge-dc28/tarball | tar xzvf - --one-top-level="dcfurs-badge-dc28" --strip-components 1 -C /opt
-WORKDIR /opt/dcfurs-badge-dc28
-RUN python3 ./make.py clean
-RUN python3 ./make.py
-#RUN python3 ./make.py upload
